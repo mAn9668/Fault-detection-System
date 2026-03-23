@@ -146,15 +146,20 @@ void clearAlarm() {
 //  SETUP
 // ════════════════════════════════════════════════════════════════
 void setup() {
+  // Suppress GPIO15 boot pull-up glitch — must be before pinMode
+  digitalWrite(BUZ, LOW);
+
   Serial.begin(115200);
   Wire.begin(SDA_PIN, SCL_PIN);
+
+  // Set ADC range to 0–3.3V for all analog pins (default is only 0–1.1V)
+  analogSetAttenuation(ADC_11db);
 
   pinMode(LED_GR, OUTPUT);
   pinMode(LED_RE, OUTPUT);
   pinMode(BUZ,    OUTPUT);
-  pinMode(VIB,    INPUT);   // SW-420 digital DO (has onboard pull-down)
+  pinMode(VIB,    INPUT);
   for (int i = 0; i < 5; i++) pinMode(motorLEDs[i], OUTPUT);
-  // CUR, TEM, POT: analog pins — no pinMode needed
 
   clearAlarm();
   Serial.println("=== Motor Protection System Ready ===");
