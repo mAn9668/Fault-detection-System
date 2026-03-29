@@ -25,3 +25,5 @@ desktop.ini
 secrets.h
 credentials.h
 config_private.h
+
+*.old
