@@ -44,17 +44,17 @@ void clearAlarm() {         //Resets warning lights and turns off buzzer
 //--------------------------------------------------
 float getCurrent(){
 
-    return 0.0;
+    return 20.0 + random(-20, 20) / 10.0;    
 }
 
 float getVibration(){
     
-    return 0.0;
+    return 20.0 + random(-20, 20) / 10.0;
 }
 
 float getTemp(){
     
-    return 0.0;
+    return 20.0 + random(-20, 20) / 10.0;
 }
 
 //-----------------------------------------------------------
@@ -190,7 +190,7 @@ void setup(){
 }
 
 void loop(){
-    Serial.println("Waiting for Tresholds");
+    // Serial.println("Waiting for Tresholds");
     if(!treshReceived)return;//Block execution till treshold values are received 
 
       // ── Send sensor data on interval ────────────────────────

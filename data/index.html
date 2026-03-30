@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>ESP32 Test</title>
+</head>
+<body>
+  <h2>POST Test</h2>
+  <input type="number" id="cur"  placeholder="Current threshold"/><br><br>
+  <input type="number" id="vib"  placeholder="Vibration threshold"/><br><br>
+  <input type="number" id="temp" placeholder="Temp threshold"/><br><br>
+  <button onclick="sendThresh()">Send</button>
+  <p id="post-result"></p>
+
+  <hr>
+
+  <h2>SSE Test</h2>
+  <p>Current:   <span id="cur-val">--</span></p>
+  <p>Vibration: <span id="vib-val">--</span></p>
+  <p>Temp:      <span id="temp-val">--</span></p>
+
+  <script>
+    // POST
+    async function sendThresh() {
+      const res = await fetch('/treshold', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentTresh:   parseFloat(document.getElementById('cur').value),
+          vibrationTresh: parseFloat(document.getElementById('vib').value),
+          tempTresh:      parseFloat(document.getElementById('temp').value)
+        })
+      });
+      const data = await res.json();
+      document.getElementById('post-result').textContent = JSON.stringify(data);
+    }
+
+    // SSE
+    const evtSource = new EventSource('/events');
+    evtSource.addEventListener('sensor', (e) => {
+      const d = JSON.parse(e.data);
+      document.getElementById('cur-val').textContent  = d.current;
+      document.getElementById('vib-val').textContent  = d.vibration;
+      document.getElementById('temp-val').textContent = d.temp;
+    });
+  </script>
+</body>
+</html>
