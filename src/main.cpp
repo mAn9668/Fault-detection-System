@@ -22,6 +22,7 @@ float vibrationTresh = 0;
 float tempTresh      = 0;
 bool treshReceived = false;
 
+
 //Wifi Credentials 
 const char* ssid = "Vishnu-GBk";
 const char* password = "2aCD1gAn";
@@ -43,18 +44,52 @@ void clearAlarm() {         //Resets warning lights and turns off buzzer
 //             Sensor reading functions
 //--------------------------------------------------
 float getCurrent(){
+    float sensitivity = 0.100;   // 20A module
+    float offsetVoltage = 0;
+    int samples = 100;
+    float sum = 0;
 
-    return 20.0 + random(-20, 20) / 10.0;    
+    for (int i = 0; i < samples; i++) {
+        sum += analogRead(CUR);
+        delay(2);
+    }
+
+    float avg = sum / samples;
+
+    float voltage = (avg / 4095.0) * 3.3;
+
+    float current = (voltage - offsetVoltage) / sensitivity;
+
+    if (abs(current) < 0.15) {
+        current = 0;
+    }
+
+  return current;
 }
 
-float getVibration(){
-    
-    return 20.0 + random(-20, 20) / 10.0;
+float getVibration() {
+  int pulseCount = 0;
+  unsigned long startTime = millis();
+
+  while (millis() - startTime < 200) {  // sample for 200ms
+    if (digitalRead(VIB) == HIGH) {
+      pulseCount++;
+      delay(10);  // debounce
+    }
+  }
+
+  // Scale pulse count to 0–5 range (tune maxPulses to your sensor)
+  int maxPulses = 20;
+  float scaled = (pulseCount / (float)maxPulses) * 5.0;
+  return constrain(scaled, 0.0, 5.0);
 }
 
-float getTemp(){
-    
-    return 20.0 + random(-20, 20) / 10.0;
+
+float getTemp() {
+  int adcValue = analogRead(VIB);
+  float voltage = (adcValue / 4095.0) * 3.3;
+  float temperatureC = voltage * 10;
+  return temperatureC;
 }
 
 //-----------------------------------------------------------

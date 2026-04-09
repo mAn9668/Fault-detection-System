@@ -2,47 +2,114 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <title>ESP32 Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ESP32 Sensor Dashboard</title>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-  <h2>POST Test</h2>
-  <input type="number" id="cur"  placeholder="Current threshold"/><br><br>
-  <input type="number" id="vib"  placeholder="Vibration threshold"/><br><br>
-  <input type="number" id="temp" placeholder="Temp threshold"/><br><br>
-  <button onclick="sendThresh()">Send</button>
-  <p id="post-result"></p>
 
-  <hr>
+  <header>
+    <div class="header-left">
+      <div class="status-dot" id="conn-dot"></div>
+      <span class="status-label" id="conn-label">CONNECTING</span>
+    </div>
+    <div class="header-title">
+      <span class="title-tag">ESP32</span>
+      <span class="title-main">SENSOR MONITOR</span>
+    </div>
+    <div class="header-right">
+      <span id="clock">--:--:--</span>
+    </div>
+  </header>
 
-  <h2>SSE Test</h2>
-  <p>Current:   <span id="cur-val">--</span></p>
-  <p>Vibration: <span id="vib-val">--</span></p>
-  <p>Temp:      <span id="temp-val">--</span></p>
+  <main>
 
-  <script>
-    // POST
-    async function sendThresh() {
-      const res = await fetch('/treshold', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          currentTresh:   parseFloat(document.getElementById('cur').value),
-          vibrationTresh: parseFloat(document.getElementById('vib').value),
-          tempTresh:      parseFloat(document.getElementById('temp').value)
-        })
-      });
-      const data = await res.json();
-      document.getElementById('post-result').textContent = JSON.stringify(data);
-    }
+    <!-- Live Readings -->
+    <section class="readings-row">
+      <div class="reading-card" id="card-cur">
+        <div class="reading-label">CURRENT</div>
+        <div class="reading-value"><span id="cur-val">--</span><span class="reading-unit">A</span></div>
+        <div class="reading-bar-wrap"><div class="reading-bar" id="bar-cur"></div></div>
+      </div>
+      <div class="reading-card" id="card-vib">
+        <div class="reading-label">VIBRATION</div>
+        <div class="reading-value"><span id="vib-val">--</span><span class="reading-unit">g</span></div>
+        <div class="reading-bar-wrap"><div class="reading-bar" id="bar-vib"></div></div>
+      </div>
+      <div class="reading-card" id="card-temp">
+        <div class="reading-label">TEMPERATURE</div>
+        <div class="reading-value"><span id="temp-val">--</span><span class="reading-unit">°C</span></div>
+        <div class="reading-bar-wrap"><div class="reading-bar" id="bar-temp"></div></div>
+      </div>
+    </section>
 
-    // SSE
-    const evtSource = new EventSource('/events');
-    evtSource.addEventListener('sensor', (e) => {
-      const d = JSON.parse(e.data);
-      document.getElementById('cur-val').textContent  = d.current;
-      document.getElementById('vib-val').textContent  = d.vibration;
-      document.getElementById('temp-val').textContent = d.temp;
-    });
-  </script>
+    <!-- Charts -->
+    <section class="charts-row">
+      <div class="chart-card">
+        <div class="chart-header">
+          <span class="chart-title">CURRENT <span class="chart-unit">(A)</span></span>
+          <span class="chart-latest" id="chart-cur-latest">-- A</span>
+        </div>
+        <canvas id="chart-cur" height="120"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <span class="chart-title">VOLTAGE <span class="chart-unit">(V)</span></span>
+          <span class="chart-latest" id="chart-vib-latest">-- V</span>
+        </div>
+        <canvas id="chart-vib" height="120"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <span class="chart-title">TEMPERATURE <span class="chart-unit">(°C)</span></span>
+          <span class="chart-latest" id="chart-temp-latest">-- °C</span>
+        </div>
+        <canvas id="chart-temp" height="120"></canvas>
+      </div>
+    </section>
+
+    <!-- Threshold Controls + Error Log -->
+    <section class="bottom-row">
+
+      <div class="threshold-card">
+        <div class="section-title">THRESHOLD CONTROL</div>
+        <div class="thresh-fields">
+          <label class="thresh-label">
+            <span>CURRENT (A)</span>
+            <input type="number" id="cur" placeholder="e.g. 5.0" step="0.1"/>
+          </label>
+          <label class="thresh-label">
+            <span>VIBRATION (g)</span>
+            <input type="number" id="vib" placeholder="e.g. 2.0" step="0.1"/>
+          </label>
+          <label class="thresh-label">
+            <span>TEMPERATURE (°C)</span>
+            <input type="number" id="temp" placeholder="e.g. 80" step="1"/>
+          </label>
+        </div>
+        <button onclick="sendThresh()" class="send-btn">
+          <span class="btn-icon">▶</span> SEND THRESHOLDS
+        </button>
+        <div class="post-result-wrap">
+          <span class="post-result-label">RESPONSE</span>
+          <p id="post-result">Awaiting send…</p>
+        </div>
+      </div>
+
+      <div class="log-card">
+        <div class="section-title">
+          ERROR LOG
+          <button class="clear-btn" onclick="clearLog()">CLEAR</button>
+        </div>
+        <div class="log-list" id="log-list">
+          <div class="log-empty">No errors recorded.</div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
 </body>
 </html>
